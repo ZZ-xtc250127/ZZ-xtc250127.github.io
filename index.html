@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>加壮壮小号</title>
+  <style>
+    :root{
+      --card-w: 360px;
+    }
+    html,body{
+      height:100%;
+      margin:0;
+      font-family: -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+      background: url('bg.jpg') no-repeat center center / cover;
+      -webkit-font-smoothing:antialiased;
+      color:#222;
+    }
+    .float-title{
+      position:fixed;
+      left:50%;
+      top:8vh;
+      transform:translateX(-50%);
+      font-size:20px;
+      font-weight:600;
+      color:rgba(255,255,255,0.35);
+      pointer-events:none;
+      letter-spacing:1px;
+    }
+    .center-wrap{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:40px 20px;
+    }
+    .card{
+      width:var(--card-w);
+      background:rgba(255,255,255,0.9);
+      border-radius:14px;
+      box-shadow:0 10px 25px rgba(18,25,40,0.15);
+      padding:22px 20px;
+      text-align:center;
+      backdrop-filter: blur(8px);
+    }
+    .card h2{
+      margin:0 0 14px;
+      font-size:18px;
+      color:#333;
+    }
+    .label{
+      font-size:12px;
+      color:#666;
+      text-align:left;
+      margin-bottom:4px;
+      margin-top:10px;
+    }
+    .field{
+      background:#f3f4f6;
+      border-radius:8px;
+      padding:10px 12px;
+      font-size:16px;
+      color:#222;
+    }
+    .code{
+      font-weight:700;
+      font-size:20px;
+      letter-spacing:2px;
+    }
+    .row{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      margin-top:16px;
+    }
+    button{
+      border:0;
+      outline:0;
+      padding:10px 16px;
+      border-radius:999px;
+      font-size:14px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn-primary{
+      background:linear-gradient(180deg,#5f7df0,#5164d9);
+      color:white;
+      box-shadow:0 6px 12px rgba(81,100,217,0.25);
+    }
+    .btn-ghost{
+      background:transparent;
+      color:#5164d9;
+      border:1px solid rgba(81,100,217,0.15);
+    }
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:#777;
+    }
+  </style>
+</head>
+<body>
+  <div class="float-title">加壮壮小号</div>
+
+  <div class="center-wrap">
+    <div class="card">
+      <h2>交友口令</h2>
+
+      <div class="label">天才号</div>
+      <div class="field" id="userid">1220903505</div>
+
+      <div class="label" style="margin-top:8px;">口令</div>
+      <div class="field">
+        <span class="code" id="codeValue">------</span>
+      </div>
+
+      <div class="row">
+        <button class="btn-primary" id="refreshBtn">刷新</button>
+        <button class="btn-ghost" id="manualBtn">手动更新口令</button>
+      </div>
+
+      <div class="hint">提示：只有管理员可手动更新口令</div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const ADMIN_PASS = "252019";
+      const CODE_KEY = 'zhuang_code_v1';
+
+      const codeEl = document.getElementById('codeValue');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const manualBtn = document.getElementById('manualBtn');
+
+      // 随机生成 6 位数字口令
+      function randomCode(){
+        return Math.floor(Math.random()*1_000_000).toString().padStart(6,'0');
+      }
+
+      // 设置口令
+      function setCode(c, save=true){
+        codeEl.textContent = c;
+        if(save){
+          try{ sessionStorage.setItem(CODE_KEY, c); }catch(e){}
+        }
+      }
+
+      // 载入口令
+      function loadCode(){
+        try{
+          let c = sessionStorage.getItem(CODE_KEY);
+          if(!c){ c = randomCode(); setCode(c); }
+          else setCode(c,false);
+        }catch(e){ setCode(randomCode(),false); }
+      }
+
+      // 刷新随机
+      refreshBtn.addEventListener('click',()=>{
+        const newC = randomCode();
+        setCode(newC,true);
+      });
+
+      // 手动更新（管理员验证）
+      manualBtn.addEventListener('click',()=>{
+        const pwd = prompt("请输入管理员密码：");
+        if(pwd === null) return;
+        if(pwd !== ADMIN_PASS){
+          alert("密码错误，拒绝修改。");
+          return;
+        }
+        const current = codeEl.textContent;
+        let newC = prompt("验证通过 ✅\n请输入新的口令：", current);
+        if(newC === null || newC.trim()==="") return;
+        setCode(newC.trim(),true);
+        alert("口令已更新为："+newC);
+      });
+
+      loadCode();
+    })();
+  </script>
+</body>
+</html>
